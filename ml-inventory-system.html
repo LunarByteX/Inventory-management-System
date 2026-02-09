@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Inventory System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-purple {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+        }
+        .gradient-blue {
+            background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+        }
+        .gradient-green {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        .btn-google {
+            background: white;
+            border: 1px solid #d1d5db;
+            color: #374151;
+        }
+        .btn-google:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        .btn-facebook {
+            background: #1877F2;
+            color: white;
+        }
+        .btn-facebook:hover {
+            background: #166fe5;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [currentPage, setCurrentPage] = useState('login');
+            const [userData, setUserData] = useState(null);
+            const [activeTab, setActiveTab] = useState('dashboard');
+
+            // Sample Inventory Data
+            const [inventory, setInventory] = useState([
+                { id: 1, name: 'Paracetamol 500mg', category: 'Tablets', stock: 45, price: 25, cost: 18, status: 'good', sku: 'MED-001' },
+                { id: 2, name: 'Vitamin C Tablets', category: 'Tablets', stock: 8, price: 45, cost: 32, status: 'low', sku: 'MED-002' },
+                { id: 3, name: 'Amoxicillin 250mg', category: 'Capsules', stock: 0, price: 120, cost: 85, status: 'out', sku: 'MED-003' },
+                { id: 4, name: 'Cough Syrup 100ml', category: 'Syrups', stock: 23, price: 85, cost: 60, status: 'good', sku: 'MED-004' },
+                { id: 5, name: 'Insulin Vial', category: 'Injections', stock: 3, price: 450, cost: 320, status: 'low', sku: 'MED-005' }
+            ]);
+
+            const [agricultureInventory, setAgricultureInventory] = useState([
+                { id: 1, name: 'Basmati Rice (50kg)', category: 'Grains', stock: 85, price: 2500, cost: 1800, status: 'good', sku: 'AGR-001', stockAge: 45 },
+                { id: 2, name: 'Wheat Flour (25kg)', category: 'Flours', stock: 5, price: 800, cost: 550, status: 'low', sku: 'AGR-002', stockAge: 120 },
+                { id: 3, name: 'Organic Wheat', category: 'Grains', stock: 0, price: 1200, cost: 850, status: 'out', sku: 'AGR-003', stockAge: 0 },
+                { id: 4, name: 'Ragi (Finger Millet)', category: 'Millets', stock: 34, price: 1500, cost: 1100, status: 'good', sku: 'AGR-004', stockAge: 30 },
+                { id: 5, name: 'Toor Dal (1kg)', category: 'Pulses', stock: 2, price: 180, cost: 130, status: 'low', sku: 'AGR-005', stockAge: 90 }
+            ]);
+
+            const [showAddProduct, setShowAddProduct] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('all');
+
+            // Login Component
+            const Login = () => {
+                const [formData, setFormData] = useState({ email: '', password: '' });
+
+                const handleLogin = (businessType = 'pharma') => {
+                    const name = formData.email ? formData.email.split('@')[0] : 'Demo User';
+                    setUserData({
+                        name: name.charAt(0).toUpperCase() + name.slice(1),
+                        email: formData.email || 'demo@example.com',
+                        businessType: businessType
+                    });
+                    setCurrentPage('dashboard');
+                };
+
+                const handleSocialLogin = (provider) => {
+                    setUserData({
+                        name: `Social ${provider} User`,
+                        email: `user@${provider}.com`,
+                        businessType: 'pharma'
+                    });
+                    setCurrentPage('dashboard');
+                };
+
+                return (
+                    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 gradient-blue rounded-xl mb-4 mx-auto flex items-center justify-center">
+                                    <span className="text-white text-2xl">📦</span>
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+                                <p className="text-gray-600">ML Inventory Management System</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Enter your password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={() => handleLogin('pharma')}
+                                    className="w-full gradient-blue text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
+                                >
+                                    Sign In as Pharmacy
+                                </button>
+
+                                <button
+                                    onClick={() => handleLogin('agriculture')}
+                                    className="w-full gradient-green text-white py-3 rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
+                                >
+                                    Sign In as Agriculture
+                                </button>
+                            </div>
+
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleSocialLogin('google')}
+                                    className="btn-google px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2"
+                                >
+                                    <span className="text-red-500">🔴</span>
+                                    <span>Google</span>
+                                </button>
+                                <button
+                                    onClick={() => handleSocialLogin('facebook')}
+                                    className="btn-facebook px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2"
+                                >
+                                    <span className="text-white">🔵</span>
+                                    <span>Facebook</span>
+                                </button>
+                            </div>
+
+                            <div className="text-center mt-6">
+                                <p className="text-gray-600">
+                                    Don't have an account?{' '}
+                                    <button
+                                        onClick={() => setCurrentPage('register')}
+                                        className="text-blue-600 font-semibold hover:underline"
+                                    >
+                                        Register Now
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Register Component
+            const Register = () => {
+                const [formData, setFormData] = useState({
+                    name: '', email: '', password: '', confirmPassword: '', businessType: ''
+                });
+
+                const handleRegister = () => {
+                    if (!formData.businessType) {
+                        alert('Please select your business type');
+                        return;
+                    }
+                    if (!formData.password || !formData.confirmPassword) {
+                        alert('Please enter password and confirmation');
+                        return;
+                    }
+                    if (formData.password !== formData.confirmPassword) {
+                        alert('Passwords do not match');
+                        return;
+                    }
+                    
+                    setUserData({
+                        name: formData.name || 'New User',
+                        email: formData.email || 'new@example.com',
+                        businessType: formData.businessType
+                    });
+                    setCurrentPage('dashboard');
+                };
+
+                const handleSocialRegister = (provider) => {
+                    setUserData({
+                        name: `Social ${provider} User`,
+                        email: `user@${provider}.com`,
+                        businessType: 'pharma'
+                    });
+                    setCurrentPage('dashboard');
+                };
+
+                return (
+                    <div className="min-h-screen gradient-purple flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 gradient-purple rounded-xl mb-4 mx-auto flex items-center justify-center">
+                                    <span className="text-white text-2xl">🏪</span>
+                                </div>
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h1>
+                                <p className="text-gray-600">Join our smart inventory platform</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Enter your full name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                    <input
+                                        type="email"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Enter your email"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Create a password"
+                                        value={formData.password}
+                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                                    <input
+                                        type="password"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                        placeholder="Confirm your password"
+                                        value={formData.confirmPassword}
+                                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">Select Your Business Type *</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            onClick={() => setFormData({ ...formData, businessType: 'pharma' })}
+                                            className={`p-4 border-2 rounded-xl transition-all ${
+                                                formData.businessType === 'pharma'
+                                                    ? 'border-purple-500 bg-purple-50 shadow-lg'
+                                                    : 'border-gray-200 hover:border-purple-300'
+                                            }`}
+                                        >
+                                            <span className="text-2xl mb-2 block">💊</span>
+                                            <p className={`font-semibold ${
+                                                formData.businessType === 'pharma' ? 'text-purple-700' : 'text-gray-600'
+                                            }`}>Pharmacy</p>
+                                            <p className="text-xs text-gray-500 mt-1">Medicines & Healthcare</p>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setFormData({ ...formData, businessType: 'agriculture' })}
+                                            className={`p-4 border-2 rounded-xl transition-all ${
+                                                formData.businessType === 'agriculture'
+                                                    ? 'border-green-500 bg-green-50 shadow-lg'
+                                                    : 'border-gray-200 hover:border-green-300'
+                                            }`}
+                                        >
+                                            <span className="text-2xl mb-2 block">🌾</span>
+                                            <p className={`font-semibold ${
+                                                formData.businessType === 'agriculture' ? 'text-green-700' : 'text-gray-600'
+                                            }`}>Agriculture</p>
+                                            <p className="text-xs text-gray-500 mt-1">Grains, Millets & More</p>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleRegister}
+                                    className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                                        formData.businessType
+                                            ? 'gradient-purple text-white hover:opacity-90 shadow-lg'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    }`}
+                                >
+                                    Create Account
+                                </button>
+                            </div>
+
+                            <div className="relative my-6">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-300"></div>
+                                </div>
+                                <div className="relative flex justify-center text-sm">
+                                    <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleSocialRegister('google')}
+                                    className="btn-google px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2"
+                                >
+                                    <span className="text-red-500">🔴</span>
+                                    <span>Google</span>
+                                </button>
+                                <button
+                                    onClick={() => handleSocialRegister('facebook')}
+                                    className="btn-facebook px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center space-x-2"
+                                >
+                                    <span className="text-white">🔵</span>
+                                    <span>Facebook</span>
+                                </button>
+                            </div>
+
+                            <div className="text-center mt-6">
+                                <p className="text-gray-600">
+                                    Already have an account?{' '}
+                                    <button
+                                        onClick={() => setCurrentPage('login')}
+                                        className="text-purple-600 font-semibold hover:underline"
+                                    >
+                                        Sign In
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Sidebar Component
+            const Sidebar = () => {
+                const menuItems = userData.businessType === 'pharma' 
+                    ? [
+                        { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                        { id: 'inventory', label: 'Inventory', icon: '📦' },
+                        { id: 'expiry', label: 'Expiry Management', icon: '📅' },
+                        { id: 'predictions', label: 'ML Predictions', icon: '🤖' },
+                        { id: 'analytics', label: 'Analytics', icon: '📈' },
+                    ]
+                    : [
+                        { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                        { id: 'inventory', label: 'Inventory', icon: '📦' },
+                        { id: 'rotation', label: 'Stock Rotation', icon: '🔄' },
+                        { id: 'predictions', label: 'ML Predictions', icon: '🤖' },
+                        { id: 'analytics', label: 'Analytics', icon: '📈' },
+                    ];
+
+                return (
+                    <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-xl border-r border-gray-200">
+                        <div className="p-6 border-b border-gray-200">
+                            <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-10 h-10 gradient-blue rounded-lg flex items-center justify-center">
+                                    <span className="text-white font-bold">ML</span>
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-gray-800">SmartInventory</h2>
+                                    <p className="text-sm text-gray-500 capitalize">{userData.businessType}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <nav className="p-4 space-y-2">
+                            {menuItems.map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                                        activeTab === item.id
+                                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                            : 'text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    <span className="text-lg">{item.icon}</span>
+                                    <span className="font-medium">{item.label}</span>
+                                    {item.id === 'expiry' && userData.businessType === 'pharma' && (
+                                        <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">8</span>
+                                    )}
+                                    {item.id === 'rotation' && userData.businessType === 'agriculture' && (
+                                        <span className="ml-auto bg-orange-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                                    )}
+                                    {item.id === 'inventory' && (
+                                        <span className="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                            {(userData.businessType === 'pharma' ? inventory : agricultureInventory).filter(p => p.status === 'low' || p.status === 'out').length}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </nav>
+
+                        <div className="absolute bottom-4 left-4 right-4">
+                            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg mb-3">
+                                <div className="w-8 h-8 gradient-purple rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm font-bold">{userData.name.charAt(0)}</span>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-800">{userData.name}</p>
+                                    <p className="text-xs text-gray-500 capitalize">{userData.businessType} Owner</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setUserData(null);
+                                    setCurrentPage('login');
+                                }}
+                                className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 border border-red-200"
+                            >
+                                <span>🚪</span>
+                                <span className="font-medium">Logout</span>
+                            </button>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Dashboard Content
+            const DashboardContent = () => {
+                const currentInventory = userData.businessType === 'pharma' ? inventory : agricultureInventory;
+                const stats = {
+                    totalProducts: currentInventory.length,
+                    lowStock: currentInventory.filter(p => p.status === 'low').length,
+                    outOfStock: currentInventory.filter(p => p.status === 'out').length,
+                    totalValue: currentInventory.reduce((sum, item) => sum + (item.stock * item.price), 0)
+                };
+
+                const topProducts = currentInventory.slice(0, 3);
+
+                return (
+                    <div className="space-y-6">
+                        {/* Welcome Banner */}
+                        <div className="gradient-blue rounded-2xl p-6 text-white">
+                            <h1 className="text-2xl font-bold mb-2">Welcome back, {userData.name}! 👋</h1>
+                            <p>Your {userData.businessType} inventory is looking great today!</p>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="p-3 bg-blue-100 rounded-lg">
+                                        <span className="text-blue-600 text-xl">📦</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-gray-800">{stats.totalProducts}</span>
+                                </div>
+                                <h3 className="text-gray-600 font-medium mt-4">Total Products</h3>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="p-3 bg-orange-100 rounded-lg">
+                                        <span className="text-orange-600 text-xl">⚠️</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-gray-800">{stats.lowStock}</span>
+                                </div>
+                                <h3 className="text-gray-600 font-medium mt-4">Low Stock</h3>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="p-3 bg-red-100 rounded-lg">
+                                        <span className="text-red-600 text-xl">❌</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-gray-800">{stats.outOfStock}</span>
+                                </div>
+                                <h3 className="text-gray-600 font-medium mt-4">Out of Stock</h3>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex items-center justify-between">
+                                    <div className="p-3 bg-green-100 rounded-lg">
+                                        <span className="text-green-600 text-xl">💰</span>
+                                    </div>
+                                    <span className="text-2xl font-bold text-gray-800">₹{stats.totalValue.toLocaleString()}</span>
+                                </div>
+                                <h3 className="text-gray-600 font-medium mt-4">Total Value</h3>
+                            </div>
+                        </div>
+
+                        {/* Top Products */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">Top Products</h3>
+                            <div className="space-y-3">
+                                {topProducts.map((product, index) => (
+                                    <div key={product.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                                        <div className="flex items-center space-x-3">
+                                            <span className="text-lg">{index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}</span>
+                                            <div>
+                                                <span className="font-medium text-gray-800">{product.name}</span>
+                                                <p className="text-sm text-gray-500">{product.category}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="font-semibold text-gray-800">{product.stock} units</span>
+                                            <p className="text-sm text-gray-500">₹{product.price}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Inventory Content
+            const InventoryContent = () => {
+                const currentInventory = userData.businessType === 'pharma' ? inventory : agricultureInventory;
+                const categories = [...new Set(currentInventory.map(item => item.category))];
+                
+                const filteredInventory = currentInventory.filter(item => {
+                    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                        item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+                    return matchesSearch && matchesCategory;
+                });
+
+                const stats = {
+                    total: currentInventory.length,
+                    lowStock: currentInventory.filter(p => p.status === 'low').length,
+                    outOfStock: currentInventory.filter(p => p.status === 'out').length
+                };
+
+                const getStatusBadge = (status) => {
+                    switch (status) {
+                        case 'good': return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">✅ In Stock</span>;
+                        case 'low': return <span className="px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">⚠️ Low Stock</span>;
+                        case 'out': return <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">❌ Out of Stock</span>;
+                        default: return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">Unknown</span>;
+                    }
+                };
+
+                const AddProductModal = () => {
+                    const [formData, setFormData] = useState({
+                        name: '', category: '', stock: '', price: '', cost: '', sku: ''
+                    });
+
+                    const handleSubmit = (e) => {
+                        e.preventDefault();
+                        const newProduct = {
+                            id: currentInventory.length + 1,
+                            ...formData,
+                            stock: parseInt(formData.stock),
+                            price: parseInt(formData.price),
+                            cost: parseInt(formData.cost),
+                            status: formData.stock > 10 ? 'good' : formData.stock > 0 ? 'low' : 'out'
+                        };
+
+                        if (userData.businessType === 'pharma') {
+                            setInventory([...inventory, newProduct]);
+                        } else {
+                            setAgricultureInventory([...agricultureInventory, newProduct]);
+                        }
+                        
+                        setShowAddProduct(false);
+                        setFormData({ name: '', category: '', stock: '', price: '', cost: '', sku: '' });
+                    };
+
+                    return (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-2xl w-full max-w-md">
+                                <div className="p-6 border-b border-gray-200">
+                                    <h2 className="text-xl font-bold text-gray-800">Add New Product</h2>
+                                </div>
+                                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                value={formData.stock}
+                                                onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                value={formData.sku}
+                                                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                value={formData.price}
+                                                onChange={(e) => setFormData({...formData, price: e.target.value})}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Cost (₹)</label>
+                                            <input
+                                                type="number"
+                                                required
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                value={formData.cost}
+                                                onChange={(e) => setFormData({...formData, cost: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-4 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddProduct(false)}
+                                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 px-4 py-3 gradient-blue text-white rounded-lg hover:opacity-90"
+                                        >
+                                            Add Product
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    );
+                };
+
+                return (
+                    <div className="space-y-6">
+                        {/* Header with Search and Stats */}
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                            <div className="lg:col-span-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="flex-1">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                placeholder="Search products..."
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
+                                            <span className="absolute left-3 top-3 text-gray-400">🔍</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAddProduct(true)}
+                                        className="gradient-green text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all shadow-lg"
+                                    >
+                                        + Add Product
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                                    <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+                                    <div className="text-sm text-gray-600">Total</div>
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                                    <div className="text-2xl font-bold text-orange-600">{stats.lowStock}</div>
+                                    <div className="text-sm text-gray-600">Low Stock</div>
+                                </div>
+                                <div className="bg-white p-4 rounded-lg border border-gray-200 text-center">
+                                    <div className="text-2xl font-bold text-red-600">{stats.outOfStock}</div>
+                                    <div className="text-sm text-gray-600">Out of Stock</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Category Filter */}
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => setSelectedCategory('all')}
+                                className={`px-4 py-2 rounded-lg transition-all ${
+                                    selectedCategory === 'all' 
+                                        ? 'bg-blue-500 text-white' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                All
+                            </button>
+                            {categories.map(category => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`px-4 py-2 rounded-lg transition-all ${
+                                        selectedCategory === category 
+                                            ? 'bg-blue-500 text-white' 
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Products Table */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredInventory.map((product) => (
+                                            <tr key={product.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div>
+                                                        <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                                                        <div className="text-sm text-gray-500">{product.sku}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                                        {product.category}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm text-gray-900">{product.stock}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">₹{product.price}</div>
+                                                    <div className="text-sm text-gray-500">Cost: ₹{product.cost}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {getStatusBadge(product.status)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <button className="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                                                    <button className="text-red-600 hover:text-red-900">Delete</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {filteredInventory.length === 0 && (
+                                <div className="text-center py-12">
+                                    <span className="text-4xl mb-4 block">📦</span>
+                                    <p className="text-gray-500 text-lg">No products found</p>
+                                    <p className="text-gray-400">Try changing your search or filters</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {showAddProduct && <AddProductModal />}
+                    </div>
+                );
+            };
+
+            // Expiry Management for Pharmacy
+            const ExpiryContent = () => {
+                const expiryData = [
+                    { name: 'Paracetamol 500mg', daysLeft: 14, status: 'critical', quantity: 450, batch: 'BATCH-2024-001' },
+                    { name: 'Vitamin D3 Capsules', daysLeft: 10, status: 'critical', quantity: 230, batch: 'BATCH-2024-023' },
+                    { name: 'Amoxicillin 250mg', daysLeft: 35, status: 'warning', quantity: 180, batch: 'BATCH-2024-045' },
+                    { name: 'Cetirizine 10mg', daysLeft: 45, status: 'warning', quantity: 320, batch: 'BATCH-2024-078' },
+                ];
+
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-red-50 p-6 rounded-2xl border-2 border-red-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-red-700">
+                                        {expiryData.filter(x => x.status === 'critical').length}
+                                    </span>
+                                    <span className="text-red-600 text-xl">🔥</span>
+                                </div>
+                                <h3 className="text-red-900 font-semibold mt-2">Critical Items</h3>
+                                <p className="text-red-600 text-sm">0-30 days left</p>
+                            </div>
+
+                            <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-orange-700">
+                                        {expiryData.filter(x => x.status === 'warning').length}
+                                    </span>
+                                    <span className="text-orange-600 text-xl">⚠️</span>
+                                </div>
+                                <h3 className="text-orange-900 font-semibold mt-2">Warning Items</h3>
+                                <p className="text-orange-600 text-sm">31-60 days left</p>
+                            </div>
+
+                            <div className="bg-green-50 p-6 rounded-2xl border-2 border-green-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-green-700">12</span>
+                                    <span className="text-green-600 text-xl">✅</span>
+                                </div>
+                                <h3 className="text-green-900 font-semibold mt-2">Safe Items</h3>
+                                <p className="text-green-600 text-sm">60+ days left</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4">Medicines Expiring Soon</h2>
+                            <div className="space-y-4">
+                                {expiryData.map((item, index) => (
+                                    <div key={index} className={`p-4 rounded-xl border-2 ${
+                                        item.status === 'critical' ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'
+                                    }`}>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h3 className="font-bold text-gray-800">{item.name}</h3>
+                                                <p className="text-sm text-gray-600">{item.quantity} units • {item.batch}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                    item.status === 'critical' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'
+                                                }`}>
+                                                    {item.daysLeft} days
+                                                </span>
+                                                <p className="text-xs text-gray-500 mt-1">{item.status}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex space-x-2 mt-3">
+                                            <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium">
+                                                Start Clearance
+                                            </button>
+                                            <button className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium">
+                                                Return to Supplier
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Stock Rotation for Agriculture
+            const StockRotationContent = () => {
+                const rotationData = agricultureInventory.filter(item => item.stockAge > 0).sort((a, b) => b.stockAge - a.stockAge);
+                
+                const getRotationStatus = (age) => {
+                    if (age > 90) return { status: 'critical', color: 'red', text: 'Priority Rotation' };
+                    if (age > 60) return { status: 'warning', color: 'orange', text: 'Needs Rotation' };
+                    return { status: 'good', color: 'green', text: 'Fresh Stock' };
+                };
+
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="bg-red-50 p-6 rounded-2xl border-2 border-red-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-red-700">
+                                        {rotationData.filter(x => getRotationStatus(x.stockAge).status === 'critical').length}
+                                    </span>
+                                    <span className="text-red-600 text-xl">🔄</span>
+                                </div>
+                                <h3 className="text-red-900 font-semibold mt-2">Priority Rotation</h3>
+                                <p className="text-red-600 text-sm">90+ days old</p>
+                            </div>
+
+                            <div className="bg-orange-50 p-6 rounded-2xl border-2 border-orange-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-orange-700">
+                                        {rotationData.filter(x => getRotationStatus(x.stockAge).status === 'warning').length}
+                                    </span>
+                                    <span className="text-orange-600 text-xl">⏰</span>
+                                </div>
+                                <h3 className="text-orange-900 font-semibold mt-2">Needs Rotation</h3>
+                                <p className="text-orange-600 text-sm">60-90 days old</p>
+                            </div>
+
+                            <div className="bg-green-50 p-6 rounded-2xl border-2 border-green-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold text-green-700">
+                                        {rotationData.filter(x => getRotationStatus(x.stockAge).status === 'good').length}
+                                    </span>
+                                    <span className="text-green-600 text-xl">✅</span>
+                                </div>
+                                <h3 className="text-green-900 font-semibold mt-2">Fresh Stock</h3>
+                                <p className="text-green-600 text-sm">0-60 days old</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4">Stock Rotation Priority</h2>
+                            <div className="space-y-4">
+                                {rotationData.map((item, index) => {
+                                    const rotation = getRotationStatus(item.stockAge);
+                                    return (
+                                        <div key={index} className={`p-4 rounded-xl border-2 ${
+                                            rotation.status === 'critical' ? 'bg-red-50 border-red-200' : 
+                                            rotation.status === 'warning' ? 'bg-orange-50 border-orange-200' : 'bg-green-50 border-green-200'
+                                        }`}>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h3 className="font-bold text-gray-800">{item.name}</h3>
+                                                    <p className="text-sm text-gray-600">{item.stock} units • {item.category}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                        rotation.status === 'critical' ? 'bg-red-500 text-white' : 
+                                                        rotation.status === 'warning' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'
+                                                    }`}>
+                                                        {item.stockAge} days
+                                                    </span>
+                                                    <p className="text-xs text-gray-500 mt-1">{rotation.text}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex space-x-2 mt-3">
+                                                <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium">
+                                                    Move to Front
+                                                </button>
+                                                <button className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg text-sm font-medium">
+                                                    Create Promotion
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Main Dashboard
+            const Dashboard = () => {
+                const renderContent = () => {
+                    switch (activeTab) {
+                        case 'dashboard': return <DashboardContent />;
+                        case 'inventory': return <InventoryContent />;
+                        case 'expiry': return userData.businessType === 'pharma' ? <ExpiryContent /> : <StockRotationContent />;
+                        case 'rotation': return <StockRotationContent />;
+                        default: return (
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                <h2 className="text-xl font-bold text-gray-800 mb-4">{activeTab}</h2>
+                                <p className="text-gray-600">This section is under development. Coming soon with ML features!</p>
+                            </div>
+                        );
+                    }
+                };
+
+                return (
+                    <div className="min-h-screen bg-gray-50">
+                        <Sidebar />
+                        <div className="ml-64 p-6">
+                            <header className="mb-8">
+                                <h1 className="text-2xl font-bold text-gray-800">
+                                    {activeTab === 'dashboard' ? 'Dashboard' : 
+                                     activeTab === 'expiry' && userData.businessType === 'pharma' ? 'Expiry Management' :
+                                     activeTab === 'rotation' || (activeTab === 'expiry' && userData.businessType === 'agriculture') ? 'Stock Rotation' :
+                                     activeTab}
+                                </h1>
+                                <p className="text-gray-600">
+                                    {userData.businessType === 'pharma' ? 'Pharmacy Management' : 'Agriculture Store'}
+                                </p>
+                            </header>
+                            {renderContent()}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Render based on current page
+            if (!userData && currentPage === 'login') return <Login />;
+            if (!userData && currentPage === 'register') return <Register />;
+            if (userData && currentPage === 'dashboard') return <Dashboard />;
+
+            return <Login />;
+        }
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
