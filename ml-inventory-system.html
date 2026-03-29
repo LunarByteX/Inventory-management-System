@@ -3,19 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Inventory System - Professional</title>
+    <title>ML Inventory System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="module">
+  import "./firebase.js";
+
+  // wait until firebase is ready
+  window.firebaseReady = true;
+</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             font-family: 'Inter', sans-serif;
         }
         
+        :root {
+            --bg-main: #0f1419;
+            --bg-surface: rgba(15, 20, 25, 0.95);
+            --bg-sidebar: #1a1f2e;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+
+        html[data-theme="light"] {
+            --bg-main: #f5f7fb;
+            --bg-surface: rgba(255, 255, 255, 0.96);
+            --bg-sidebar: #e5e7eb;
+            --text-main: #0f172a;
+            --text-muted: #6b7280;
+            --border-subtle: rgba(15, 23, 42, 0.12);
+        }
+        
         body {
-            background: #0f1419;
+            background: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Pharma Gradients */
@@ -25,8 +51,9 @@
         
         .gradient-pharma-card {
             background: linear-gradient(135deg, #1a1f35 0%, #2a1f42 100%);
+            transition: background-color 0.3s ease, background-image 0.3s ease;
         }
-
+        
         /* Agriculture Gradients */
         .gradient-agri-primary {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -34,13 +61,28 @@
         
         .gradient-agri-card {
             background: linear-gradient(135deg, #1a2f1f 0%, #2a3f2f 100%);
+            transition: background-color 0.3s ease, background-image 0.3s ease;
+        }
+
+        /* Lighter welcome banner in light theme */
+        html[data-theme="light"] .gradient-pharma-card {
+            background: linear-gradient(135deg, #e5ecff 0%, #f5f3ff 100%);
+        }
+
+        html[data-theme="light"] .gradient-agri-card {
+            background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
         }
 
         /* Glass morphism effects */
         .glass-dark {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-surface);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-subtle);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        html[data-theme="light"] .glass-dark {
+            background: var(--bg-surface);
         }
 
         .glass-light {
@@ -64,6 +106,22 @@
                 radial-gradient(at 40% 20%, rgba(17, 153, 142, 0.15) 0px, transparent 50%),
                 radial-gradient(at 80% 0%, rgba(56, 239, 125, 0.15) 0px, transparent 50%),
                 radial-gradient(at 0% 50%, rgba(17, 153, 142, 0.1) 0px, transparent 50%);
+        }
+
+        html[data-theme="light"] .hero-pattern-pharma {
+            background-color: #e0e7ff;
+            background-image: 
+                radial-gradient(at 40% 20%, rgba(102, 126, 234, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(118, 75, 162, 0.12) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(129, 140, 248, 0.16) 0px, transparent 50%);
+        }
+
+        html[data-theme="light"] .hero-pattern-agri {
+            background-color: #dcfce7;
+            background-image: 
+                radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.18) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(56, 239, 125, 0.14) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(34, 197, 94, 0.16) 0px, transparent 50%);
         }
 
         /* Animated gradient border */
@@ -153,6 +211,47 @@
         .animate-count {
             animation: countUp 0.5s ease-out;
         }
+
+        /* Light theme overrides for Tailwind utility classes */
+        html[data-theme="light"] .text-white {
+            color: #0f172a !important;
+        }
+
+        html[data-theme="light"] .text-gray-400 {
+            color: #6b7280 !important;
+        }
+
+        html[data-theme="light"] .text-gray-300 {
+            color: #4b5563 !important;
+        }
+
+        html[data-theme="light"] .border-white\/10 {
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+
+        html[data-theme="light"] .border-white\/20 {
+            border-color: rgba(15, 23, 42, 0.12) !important;
+        }
+
+        html[data-theme="light"] .bg-white\/5 {
+            background-color: rgba(15, 23, 42, 0.02) !important;
+        }
+
+        html[data-theme="light"] .bg-white\/10 {
+            background-color: rgba(15, 23, 42, 0.04) !important;
+        }
+
+        html[data-theme="light"] .bg-white\/20 {
+            background-color: rgba(15, 23, 42, 0.06) !important;
+        }
+
+        html[data-theme="light"] .bg-\[\#0f1419\] {
+            background-color: var(--bg-main) !important;
+        }
+
+        html[data-theme="light"] .bg-\[\#1a1f2e\] {
+            background-color: var(--bg-sidebar) !important;
+        }
     </style>
 </head>
 <body class="bg-[#0f1419]">
@@ -165,41 +264,210 @@
             const [currentPage, setCurrentPage] = useState('login');
             const [userData, setUserData] = useState(null);
             const [activeTab, setActiveTab] = useState('dashboard');
+            const [theme, setTheme] = useState('dark');
+
+            // Theme initialization: localStorage -> system preference
+            useEffect(() => {
+                try {
+                    const stored = localStorage.getItem('theme');
+                    if (stored === 'light' || stored === 'dark') {
+                        setTheme(stored);
+                        document.documentElement.setAttribute('data-theme', stored);
+                        return;
+                    }
+                } catch (e) {
+                    // ignore read errors
+                }
+
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initialTheme = prefersDark ? 'dark' : 'light';
+                setTheme(initialTheme);
+                document.documentElement.setAttribute('data-theme', initialTheme);
+            }, []);
+
+            // Persist theme changes
+            useEffect(() => {
+                document.documentElement.setAttribute('data-theme', theme);
+                try {
+                    localStorage.setItem('theme', theme);
+                } catch (e) {
+                    // ignore write errors
+                }
+            }, [theme]);
+
+            const toggleTheme = () => {
+                setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+            };
+
+            const ThemeToggle = ({ className = '' }) => {
+                const isDark = theme === 'dark';
+                return (
+                    <button
+                        type="button"
+                        onClick={toggleTheme}
+                        aria-label="Toggle color theme"
+                        className={`relative inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-yellow-300 shadow-sm transition-all duration-300 ${className}`}
+                    >
+                        <span className="text-lg">
+                            {isDark ? '🌙' : '☀️'}
+                        </span>
+                    </button>
+                );
+            };
 
             // Sample Inventory Data
-            const [inventory, setInventory] = useState([
-                { id: 1, name: 'Paracetamol 500mg', category: 'Tablets', stock: 45, price: 25, cost: 18, status: 'good', sku: 'MED-001' },
-                { id: 2, name: 'Vitamin C Tablets', category: 'Tablets', stock: 8, price: 45, cost: 32, status: 'low', sku: 'MED-002' },
-                { id: 3, name: 'Amoxicillin 250mg', category: 'Capsules', stock: 0, price: 120, cost: 85, status: 'out', sku: 'MED-003' },
-                { id: 4, name: 'Cough Syrup 100ml', category: 'Syrups', stock: 23, price: 85, cost: 60, status: 'good', sku: 'MED-004' },
-                { id: 5, name: 'Insulin Vial', category: 'Injections', stock: 3, price: 450, cost: 320, status: 'low', sku: 'MED-005' }
-            ]);
+           const [inventory, setInventory] = useState([]);
 
-            const [agricultureInventory, setAgricultureInventory] = useState([
-                { id: 1, name: 'Basmati Rice (50kg)', category: 'Grains', stock: 85, price: 2500, cost: 1800, status: 'good', sku: 'AGR-001', stockAge: 45 },
-                { id: 2, name: 'Wheat Flour (25kg)', category: 'Flours', stock: 5, price: 800, cost: 550, status: 'low', sku: 'AGR-002', stockAge: 120 },
-                { id: 3, name: 'Organic Wheat', category: 'Grains', stock: 0, price: 1200, cost: 850, status: 'out', sku: 'AGR-003', stockAge: 0 },
-                { id: 4, name: 'Ragi (Finger Millet)', category: 'Millets', stock: 34, price: 1500, cost: 1100, status: 'good', sku: 'AGR-004', stockAge: 30 },
-                { id: 5, name: 'Toor Dal (1kg)', category: 'Pulses', stock: 2, price: 180, cost: 130, status: 'low', sku: 'AGR-005', stockAge: 90 }
-            ]);
-
+           const [agricultureInventory, setAgricultureInventory] = useState([]);
             const [showAddProduct, setShowAddProduct] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
             const [selectedCategory, setSelectedCategory] = useState('all');
+           useEffect(() => {
+  if (!userData) return;
+
+  fetch(`http://localhost:5000/api/products/${userData.id}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Fetched Data:", data);
+
+      if (!Array.isArray(data)) {
+        console.error("Invalid data from backend");
+        return;
+      }
+
+      if (userData.businessType === "pharma") {
+        setInventory(data);
+      } else {
+        setAgricultureInventory(data);
+      }
+    })
+    .catch(err => console.error("Fetch error:", err));
+}, [userData]);
+            const addProduct = async (product) => {
+  await fetch("http://localhost:5000/api/products", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+  ...product,
+  status: product.stock > 10 ? "good" : product.stock > 0 ? "low" : "out",
+  user_id: userData.id
+})
+  });
+
+  const res = await fetch(`http://localhost:5000/api/products/${userData.id}`);
+const data = await res.json();
+
+if (userData.businessType === "pharma") {
+    setInventory(data);
+} else {
+    setAgricultureInventory(data);
+}
+};
+
+const deleteProduct = async (id) => {
+  await fetch(`http://localhost:5000/api/products/${id}`, {
+    method: "DELETE"
+  });
+
+  const res = await fetch(`http://localhost:5000/api/products/${userData.id}`);
+const data = await res.json();
+
+if (userData.businessType === "pharma") {
+    setInventory(data);
+} else {
+    setAgricultureInventory(data);
+}
+};
+
+const updateProduct = async (product) => {
+  await fetch(`http://localhost:5000/api/products/${product.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(product)
+  });
+
+  const res = await fetch(`http://localhost:5000/api/products/${userData.id}`);
+const data = await res.json();
+
+if (userData.businessType === "pharma") {
+    setInventory(data);
+} else {
+    setAgricultureInventory(data);
+}
+};
 
             // Login Component
             const Login = () => {
                 const [formData, setFormData] = useState({ email: '', password: '' });
                 const [selectedBusiness, setSelectedBusiness] = useState('pharma');
+                const [authMessage, setAuthMessage] = useState('');
+                const [authError, setAuthError] = useState('');
 
-                const handleLogin = () => {
-                    const name = formData.email ? formData.email.split('@')[0] : 'Demo User';
-                    setUserData({
-                        name: name.charAt(0).toUpperCase() + name.slice(1),
-                        email: formData.email || 'demo@example.com',
-                        businessType: selectedBusiness
-                    });
-                    setCurrentPage('dashboard');
+                const handleLogin = async () => {
+                    setAuthMessage('');
+                    setAuthError('');
+                    const firebase = window.firebaseAuth;
+                    if (!firebase) {
+                        setAuthError('Authentication service is not available. Please check Firebase configuration.');
+                        return;
+                    }
+
+                    const auth = window.firebaseAuth;
+const { signInWithEmailAndPassword } = window.firebaseHelpers;
+const signOut = window.firebaseHelpers.signOut || (() => {});
+
+                    try {
+                        const cred = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+                        const user = cred.user;
+
+                        const nameFromEmail = (user.displayName || formData.email || 'Demo User').split('@')[0];
+                        const niceName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+
+                        setUserData({
+                            id: user.uid,
+                            name: niceName,
+                            email: user.email,
+                            businessType: selectedBusiness
+                        });
+                        setCurrentPage('dashboard');
+                    } catch (error) {
+                        setAuthError(error.message || 'Failed to sign in. Please try again.');
+                    }
+                };
+
+                    const handleGoogleLogin = async () => {
+                    setAuthMessage('');
+                    setAuthError('');
+                    const firebase = window.firebaseAuth;
+                    if (!firebase) {
+                        setAuthError('Authentication service is not available. Please check Firebase configuration.');
+                        return;
+                    }
+
+                    const auth = window.firebaseAuth;
+const googleProvider = window.googleProvider;
+const { signInWithPopup } = window.firebaseHelpers;
+
+                    try {
+                        const result = await signInWithPopup(auth, googleProvider);
+                        const user = result.user;
+                        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Google User');
+                        const niceName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+
+                        setUserData({
+                            id: user.uid,
+                            name: niceName,
+                            email: user.email,
+                            businessType: selectedBusiness
+                        });
+                        setCurrentPage('dashboard');
+                    } catch (error) {
+                        setAuthError(error.message || 'Google sign-in failed. Please try again.');
+                    }
                 };
 
                 return (
@@ -328,6 +596,13 @@
                                     </button>
                                 </div>
 
+                                {authMessage && (
+                                    <p className="mt-4 text-sm text-green-400 text-center">{authMessage}</p>
+                                )}
+                                {authError && (
+                                    <p className="mt-2 text-sm text-red-400 text-center">{authError}</p>
+                                )}
+
                                 <div className="relative my-6">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t border-white/10"></div>
@@ -337,8 +612,8 @@
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button className="px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl font-medium text-white transition-all flex items-center justify-center space-x-2">
+                                <div className="flex justify-center">
+                                    <button type="button" onClick={handleGoogleLogin} className="w-full max-w-xs px-4 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl font-medium text-white transition-all flex items-center justify-center space-x-2">
                                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                                             <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                                             <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -346,12 +621,6 @@
                                             <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                                         </svg>
                                         <span>Google</span>
-                                    </button>
-                                    <button className="px-4 py-3 bg-[#1877F2] hover:bg-[#166fe5] rounded-xl font-medium text-white transition-all flex items-center justify-center space-x-2">
-                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                                        </svg>
-                                        <span>Facebook</span>
                                     </button>
                                 </div>
 
@@ -377,23 +646,48 @@
                 const [formData, setFormData] = useState({
                     name: '', email: '', password: '', confirmPassword: '', businessType: 'pharma'
                 });
+                const [authMessage, setAuthMessage] = useState('');
+                const [authError, setAuthError] = useState('');
 
-                const handleRegister = () => {
+                const handleRegister = async () => {
+                    setAuthMessage('');
+                    setAuthError('');
+
                     if (!formData.password || !formData.confirmPassword) {
-                        alert('Please enter password and confirmation');
+                        setAuthError('Please enter password and confirmation.');
                         return;
                     }
                     if (formData.password !== formData.confirmPassword) {
-                        alert('Passwords do not match');
+                        setAuthError('Passwords do not match.');
                         return;
                     }
-                    
-                    setUserData({
-                        name: formData.name || 'New User',
-                        email: formData.email || 'new@example.com',
-                        businessType: formData.businessType
-                    });
-                    setCurrentPage('dashboard');
+
+                    const firebase = window.firebaseAuth;
+                    if (!firebase) {
+                        setAuthError('Authentication service is not available. Please check Firebase configuration.');
+                        return;
+                    }
+
+                    const auth = window.firebaseAuth;
+const { createUserWithEmailAndPassword, sendEmailVerification } = window.firebaseHelpers;
+const signOut = window.firebaseHelpers.signOut || (() => {});
+
+                    try {
+                        const cred = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+                        const user = cred.user;
+                        try {
+                            await sendEmailVerification(user);
+                        } catch (e) {
+                            // Even if email sending fails, we still created the account
+                        }
+
+                        await signOut(auth);
+
+                        setAuthMessage('Account created. Please check your email and verify your address before logging in.');
+                        setCurrentPage('login');
+                    } catch (error) {
+                        setAuthError(error.message || 'Failed to create account. Please try again.');
+                    }
                 };
 
                 return (
@@ -496,6 +790,13 @@
                                         Create Account
                                     </button>
                                 </div>
+
+                                {authMessage && (
+                                    <p className="mt-4 text-sm text-green-400 text-center">{authMessage}</p>
+                                )}
+                                {authError && (
+                                    <p className="mt-2 text-sm text-red-400 text-center">{authError}</p>
+                                )}
 
                                 <div className="text-center mt-6">
                                     <p className="text-gray-400">
@@ -800,24 +1101,18 @@
 
                     const handleSubmit = (e) => {
                         e.preventDefault();
-                        const newProduct = {
-                            id: currentInventory.length + 1,
-                            ...formData,
-                            stock: parseInt(formData.stock),
-                            price: parseInt(formData.price),
-                            cost: parseInt(formData.cost),
-                            status: formData.stock > 10 ? 'good' : formData.stock > 0 ? 'low' : 'out'
-                        };
 
-                        if (userData.businessType === 'pharma') {
-                            setInventory([...inventory, newProduct]);
-                        } else {
-                            setAgricultureInventory([...agricultureInventory, newProduct]);
-                        }
-                        
-                        setShowAddProduct(false);
-                        setFormData({ name: '', category: '', stock: '', price: '', cost: '', sku: '' });
-                    };
+                        addProduct({
+                             name: formData.name,
+                             category: formData.category,
+                             stock: parseInt(formData.stock),
+                             price: parseInt(formData.price),
+                             cost: parseInt(formData.cost),
+                             sku: formData.sku
+                        });
+
+                         setShowAddProduct(false);
+                        };
 
                     return (
                         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1034,8 +1329,21 @@
                                                     {getStatusBadge(product.status)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <button className={`mr-3 ${isPharma ? 'text-purple-400 hover:text-purple-300' : 'text-green-400 hover:text-green-300'}`}>Edit</button>
-                                                    <button className="text-red-400 hover:text-red-300">Delete</button>
+                                                <button
+  onClick={() => {
+      const newStock = prompt("Enter new stock:", product.stock);
+      if (newStock !== null) {
+          updateProduct({ ...product, stock: parseInt(newStock) });
+      }
+  }}
+  className="text-purple-400 hover:text-purple-300">
+  Edit
+</button>
+<button
+  onClick={() => deleteProduct(product.id)}
+  className="text-red-400 hover:text-red-300 ml-3">
+  Delete
+</button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -1060,12 +1368,13 @@
             // Expiry/Rotation Content (Updated for dark theme)
             const ExpiryContent = () => {
                 const isPharma = userData.businessType === 'pharma';
-                const expiryData = [
-                    { name: 'Paracetamol 500mg', daysLeft: 14, status: 'critical', quantity: 450, batch: 'BATCH-2024-001' },
-                    { name: 'Vitamin D3 Capsules', daysLeft: 10, status: 'critical', quantity: 230, batch: 'BATCH-2024-023' },
-                    { name: 'Amoxicillin 250mg', daysLeft: 35, status: 'warning', quantity: 180, batch: 'BATCH-2024-045' },
-                    { name: 'Cetirizine 10mg', daysLeft: 45, status: 'warning', quantity: 320, batch: 'BATCH-2024-078' },
-                ];
+                const expiryData = currentInventory.map(item => ({
+  name: item.name,
+  daysLeft: Math.floor(Math.random() * 60),
+  status: Math.random() > 0.5 ? "warning" : "critical",
+  quantity: item.stock,
+  batch: item.sku
+}));
 
                 return (
                     <div className="space-y-6">
@@ -1181,11 +1490,26 @@
                     <div className="min-h-screen bg-[#0f1419]">
                         <Sidebar />
                         <div className="ml-64 p-8">
-                            <header className="mb-8">
-                                <h1 className="text-3xl font-bold text-white mb-2">{getPageTitle()}</h1>
-                                <p className="text-gray-400">
-                                    {userData.businessType === 'pharma' ? 'Pharmacy Operations' : 'Agriculture Store Management'}
-                                </p>
+                            <header className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTab('dashboard')}
+                                            className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 border border-white/20 text-sm font-medium text-white hover:bg-white/20 transition-all"
+                                        >
+                                            <span className="mr-2">🏠</span>
+                                            Home
+                                        </button>
+                                        <ThemeToggle />
+                                    </div>
+                                    <div className="mt-4">
+                                        <h1 className="text-3xl font-bold text-white mb-1">{getPageTitle()}</h1>
+                                        <p className="text-gray-400">
+                                            {userData.businessType === 'pharma' ? 'Pharmacy Operations' : 'Agriculture Store Management'}
+                                        </p>
+                                    </div>
+                                </div>
                             </header>
                             {renderContent()}
                         </div>
@@ -1205,4 +1529,5 @@
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
 </body>
+
 </html>
